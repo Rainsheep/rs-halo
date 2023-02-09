@@ -22,6 +22,84 @@
 
 ------------------------------
 
+## 项目介绍（新特征）
+
+个人博客：https://www.rainsheep.cn/
+
+此项目基于 halo 1.x 版本进行了功能加强，目前集成了 [meiliSearch](https://www.meilisearch.com/), 极大提升了 halo 1.x 搜索功能。
+因作者时间问题，之后只会进行 bug 修复，同步 halo 1.x 更新(原作者对 1.x 版本已不积极维护)，不会做大的功能更新。
+
+此版本搜索依旧有二级页，兼容 halo 1.x 所有主题，后期计划对 [Dream](https://halo.run/archives/dream) 主题做定制化更新，搜索功能会类似于 https://shoka.lostyu.me/ 网站的搜索结果。
+
+此项目主要服务于 熟悉 halo ， 并且会使用 docker-compose 的用户，确实没时间解答小白问题。。。
+
+
+
+**部署步骤**
+
+若不理解配置，保持一致即可 ，无需修改 
+
+1. 在 `~/.halo` 目录下创建 `application.yml`
+
+   ```yaml
+   meilisearch:
+     # 是否启用 meilisearch 加强搜索
+     enable: true
+     # meilisearch 的访问地址，后面会被环境变量覆盖
+     host: http://localhost:7700
+     # meilisearch 索引名字
+     index-name: halo
+     # 访问 meilisearch 的密钥, 需要大于 16 位
+     master-key: 9F31E31D7448B756DCAB57575D0A0292
+     # true 则可以搜索出加密文章(但需要密码才能访问)，false 则不能搜索出加密文章
+     include-intimate: true
+   ```
+
+2.  部署 docker, `docker-compose.yml` 内容如下
+
+   ```yaml
+   version: "3"
+   
+   services:
+     halo:
+       image: rainsheep/halo
+       container_name: halo
+       restart: on-failure:3
+       depends_on:
+         - meilisearch
+       networks:
+         - halo_network
+       volumes:
+         - ~/.halo/:/root/.halo
+         - /etc/timezone:/etc/timezone:ro
+         - /etc/localtime:/etc/localtime:ro
+       ports:
+         - "8090:8090"
+       environment:
+         - SERVER_PORT=8090
+         - HALO_ADMIN_PATH=admin
+         - HALO_CACHE=memory
+         - MEILISEARCH_HOST=http://meilisearch:7700
+   
+     meilisearch:
+         image: getmeili/meilisearch:v1.0
+         container_name: meilisearch
+         restart: on-failure:3
+         networks:
+           - halo_network
+         ports:
+           - "7700:7700"
+         environment:
+           - MEILI_ENV=production
+           - MEILI_MASTER_KEY=9F31E31D7448B756DCAB57575D0A0292
+           - MEILI_NO_ANALYTICS=true
+   
+   networks:
+     halo_network:
+   ```
+
+   >注意：ports 配置的端口 7700 需要和环境变量 MEILISEARCH_HOST 中端口一致，MEILI_MASTER_KEY 需要和 master-key 一致。
+
 ## 快速开始
 
 详细部署文档请查阅：<https://docs.halo.run>

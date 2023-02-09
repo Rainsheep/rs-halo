@@ -70,12 +70,14 @@ ext {
     levelDbVersion = "0.12"
     annotationsVersion = "3.0.1u2"
     zxingVersion = '3.4.1'
-    huaweiObsVersion = '3.21.4'
+    huaweiObsVersion = '3.22.12'
     templateInheritanceVersion = "0.4.RELEASE"
     jsoupVersion = '1.14.3'
     embeddedRedisVersion = '0.6'
     diffUtilsVersion = '4.11'
     commonsImagingVersion = "1.0-alpha3"
+    meilisearchVersion = "0.9.0"
+    okHttpVersion = "4.10.0"
 }
 
 dependencies {
@@ -128,6 +130,9 @@ dependencies {
     implementation "io.github.java-diff-utils:java-diff-utils:$diffUtilsVersion"
     implementation "org.apache.commons:commons-imaging:$commonsImagingVersion"
 
+    implementation "com.meilisearch.sdk:meilisearch-java:$meilisearchVersion"
+    implementation "com.squareup.okhttp3:okhttp:$okHttpVersion"
+
     implementation "org.iq80.leveldb:leveldb:$levelDbVersion"
     runtimeOnly "com.h2database:h2:$h2Version"
     runtimeOnly "mysql:mysql-connector-java"
@@ -143,7 +148,7 @@ dependencies {
     }
     testImplementation "org.jsoup:jsoup:$jsoupVersion"
 
-    testImplementation ("com.github.kstyrc:embedded-redis:$embeddedRedisVersion") {
+    testImplementation("com.github.kstyrc:embedded-redis:$embeddedRedisVersion") {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 

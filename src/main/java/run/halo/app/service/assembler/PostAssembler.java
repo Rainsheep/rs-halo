@@ -2,6 +2,7 @@ package run.halo.app.service.assembler;
 
 import static run.halo.app.model.support.HaloConst.URL_SEPARATOR;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -26,6 +28,7 @@ import run.halo.app.model.entity.PostMeta;
 import run.halo.app.model.entity.Tag;
 import run.halo.app.model.enums.CommentStatus;
 import run.halo.app.model.enums.PostPermalinkType;
+import run.halo.app.model.support.MeiliSearchDocument;
 import run.halo.app.model.vo.ArchiveMonthVO;
 import run.halo.app.model.vo.ArchiveYearVO;
 import run.halo.app.model.vo.PostDetailVO;
@@ -449,5 +452,36 @@ public class PostAssembler extends BasePostAssembler<Post> {
                 .append(pathSuffix);
         }
         return fullPath.toString();
+    }
+
+    public List<MeiliSearchDocument> convertToMeiliSearchDocuments(List<Post> posts) {
+        List<MeiliSearchDocument> documents = new ArrayList<>(posts.size());
+        posts.forEach(post -> documents.add(convertToMeiliSearchDocument(post)));
+        return documents;
+    }
+
+    /**
+     * Convert to MeiliSearchDocument.
+     *
+     * @param post post
+     * @return MeiliSearchDocument
+     */
+    private MeiliSearchDocument convertToMeiliSearchDocument(Post post) {
+        MeiliSearchDocument document = new MeiliSearchDocument();
+        document.setId(post.getId());
+        document.setTitle(post.getTitle());
+        document.setFullPath(buildFullPath(post));
+        List<Category> categories = postCategoryService.listCategoriesBy(post.getId());
+        document.setCategories(
+            categories.stream().map(Category::getName).collect(Collectors.toList()));
+        List<Tag> tags = postTagService.listTagsBy(post.getId());
+        document.setTags(tags.stream().map(Tag::getName).collect(Collectors.toList()));
+        document.setSummary(post.getSummary());
+        String content = post.getContent().getOriginalContent();
+        if (StringUtils.isBlank(content)) {
+            content = contentService.getById(post.getId()).getOriginalContent();
+        }
+        document.setContent(content);
+        return document;
     }
 }

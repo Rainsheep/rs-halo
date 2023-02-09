@@ -3,6 +3,7 @@ package run.halo.app.handler.file;
 import com.obs.services.internal.ObsProperties;
 import com.obs.services.internal.RestConnectionService;
 import com.obs.services.internal.ServiceException;
+import com.obs.services.internal.trans.NewTransResult;
 import com.obs.services.model.HttpMethodEnum;
 import java.util.Map;
 import okhttp3.Request;
@@ -29,13 +30,17 @@ class HuaweiObsSdkTest {
                 obsProperties = new ObsProperties();
             }
 
-            @Override
             public Request.Builder setupConnection(HttpMethodEnum method, String bucketName,
                 String objectKey,
                 Map<String, String> requestParameters,
                 RequestBody body) throws ServiceException {
-                return super.setupConnection(method, bucketName, objectKey, requestParameters,
-                    body);
+                NewTransResult newTransResult = new NewTransResult();
+                newTransResult.setBucketName(bucketName);
+                newTransResult.setObjectKey(objectKey);
+                newTransResult.setHttpMethod(method);
+                newTransResult.setParams(requestParameters);
+                newTransResult.setBody(body);
+                return super.setupConnection(newTransResult, false, false);
             }
         };
         var builder = connSvc.setupConnection(HttpMethodEnum.GET, "fake-bucket-name",

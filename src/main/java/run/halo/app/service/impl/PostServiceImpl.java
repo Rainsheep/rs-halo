@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import run.halo.app.config.MeiliSearchConfiguration;
 import run.halo.app.event.logger.LogEvent;
 import run.halo.app.event.post.PostUpdatedEvent;
 import run.halo.app.event.post.PostVisitEvent;
@@ -56,6 +57,7 @@ import run.halo.app.repository.base.BasePostRepository;
 import run.halo.app.service.CategoryService;
 import run.halo.app.service.ContentPatchLogService;
 import run.halo.app.service.ContentService;
+import run.halo.app.service.MeiliSearchService;
 import run.halo.app.service.OptionService;
 import run.halo.app.service.PostCategoryService;
 import run.halo.app.service.PostCommentService;
@@ -109,6 +111,10 @@ public class PostServiceImpl extends BasePostServiceImpl<Post> implements PostSe
 
     private final ContentPatchLogService postContentPatchLogService;
 
+    private final MeiliSearchService meiliSearchService;
+
+    private final MeiliSearchConfiguration meiliSearchConfiguration;
+
     private final ApplicationContext applicationContext;
 
     public PostServiceImpl(BasePostRepository<Post> basePostRepository,
@@ -123,6 +129,8 @@ public class PostServiceImpl extends BasePostServiceImpl<Post> implements PostSe
         PostMetaService postMetaService,
         ContentService contentService,
         ContentPatchLogService contentPatchLogService,
+        MeiliSearchConfiguration meiliSearchConfiguration,
+        MeiliSearchService meiliSearchService,
         ApplicationContext applicationContext) {
         super(basePostRepository, optionService, contentService, contentPatchLogService);
         this.postAssembler = postAssembler;
@@ -137,6 +145,8 @@ public class PostServiceImpl extends BasePostServiceImpl<Post> implements PostSe
         this.optionService = optionService;
         this.postContentService = contentService;
         this.postContentPatchLogService = contentPatchLogService;
+        this.meiliSearchConfiguration = meiliSearchConfiguration;
+        this.meiliSearchService = meiliSearchService;
         this.applicationContext = applicationContext;
     }
 
@@ -154,6 +164,9 @@ public class PostServiceImpl extends BasePostServiceImpl<Post> implements PostSe
         Assert.notNull(keyword, "keyword must not be null");
         Assert.notNull(pageable, "Page info must not be null");
 
+        if (meiliSearchConfiguration.getEnable()) {
+            return meiliSearchService.search(keyword, pageable);
+        }
         PostQuery postQuery = new PostQuery();
         postQuery.setKeyword(keyword);
         postQuery.setStatuses(Set.of(PostStatus.PUBLISHED));

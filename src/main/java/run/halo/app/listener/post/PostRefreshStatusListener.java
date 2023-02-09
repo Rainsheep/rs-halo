@@ -3,6 +3,7 @@ package run.halo.app.listener.post;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import run.halo.app.model.entity.Category;
 import run.halo.app.model.entity.Post;
 import run.halo.app.model.enums.PostStatus;
 import run.halo.app.service.CategoryService;
+import run.halo.app.service.MeiliSearchService;
 import run.halo.app.service.PostCategoryService;
 import run.halo.app.service.PostService;
 
@@ -22,19 +24,13 @@ import run.halo.app.service.PostService;
  * @date 2022-02-28
  */
 @Component
+@RequiredArgsConstructor
 public class PostRefreshStatusListener {
 
     private final PostService postService;
     private final CategoryService categoryService;
     private final PostCategoryService postCategoryService;
-
-    public PostRefreshStatusListener(PostService postService,
-        CategoryService categoryService,
-        PostCategoryService postCategoryService) {
-        this.postService = postService;
-        this.categoryService = categoryService;
-        this.postCategoryService = postCategoryService;
-    }
+    private final MeiliSearchService meiliSearchService;
 
     /**
      * If the current category is encrypted, refresh all post referencing the category to
@@ -148,6 +144,7 @@ public class PostRefreshStatusListener {
 
         PostStatus status = post.getStatus();
         if (PostStatus.RECYCLE.equals(status)) {
+            meiliSearchService.deleteDocument(post.getId());
             return;
         }
         boolean isPrivate = postCategoryService.listByPostId(post.getId())
@@ -164,5 +161,6 @@ public class PostRefreshStatusListener {
         }
         post.setStatus(status);
         postService.update(post);
+        meiliSearchService.addOrUpdateDocument(post);
     }
 }

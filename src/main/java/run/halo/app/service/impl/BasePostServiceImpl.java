@@ -36,7 +36,6 @@ import run.halo.app.service.ContentService;
 import run.halo.app.service.OptionService;
 import run.halo.app.service.base.AbstractCrudService;
 import run.halo.app.service.base.BasePostService;
-import run.halo.app.utils.DateUtils;
 import run.halo.app.utils.HaloUtils;
 import run.halo.app.utils.ServiceUtils;
 
@@ -122,7 +121,8 @@ public abstract class BasePostServiceImpl<POST extends BasePost>
 
         Optional<POST> postOptional = basePostRepository.getByIdAndStatus(id, status);
 
-        return postOptional.orElseThrow(() -> new NotFoundException("查询不到该文章的信息").setErrorData(id));
+        return postOptional.orElseThrow(
+            () -> new NotFoundException("查询不到该文章的信息").setErrorData(id));
     }
 
     @Override
