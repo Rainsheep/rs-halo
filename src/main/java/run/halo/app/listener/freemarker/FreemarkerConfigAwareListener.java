@@ -17,6 +17,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import run.halo.app.cache.AbstractStringCacheStore;
+import run.halo.app.config.MeiliSearchConfiguration;
 import run.halo.app.core.freemarker.inheritance.ThemeExtendsDirective;
 import run.halo.app.event.options.OptionUpdatedEvent;
 import run.halo.app.event.theme.ThemeActivatedEvent;
@@ -26,7 +27,6 @@ import run.halo.app.model.properties.BlogProperties;
 import run.halo.app.model.properties.SeoProperties;
 import run.halo.app.model.support.HaloConst;
 import run.halo.app.service.ClientOptionService;
-import run.halo.app.service.OptionService;
 import run.halo.app.service.ThemeService;
 import run.halo.app.service.ThemeSettingService;
 import run.halo.app.service.UserService;
@@ -54,18 +54,22 @@ public class FreemarkerConfigAwareListener {
 
     private final AbstractStringCacheStore cacheStore;
 
+    private final MeiliSearchConfiguration meiliSearchConfiguration;
+
     public FreemarkerConfigAwareListener(ClientOptionService optionService,
         Configuration configuration,
         ThemeService themeService,
         ThemeSettingService themeSettingService,
         UserService userService,
-        AbstractStringCacheStore cacheStore) throws TemplateModelException {
+        AbstractStringCacheStore cacheStore,
+        MeiliSearchConfiguration meiliSearchConfiguration) throws TemplateModelException {
         this.optionService = optionService;
         this.configuration = configuration;
         this.themeService = themeService;
         this.themeSettingService = themeSettingService;
         this.userService = userService;
         this.cacheStore = cacheStore;
+        this.meiliSearchConfiguration = meiliSearchConfiguration;
 
         this.initFreemarkerConfig();
     }
@@ -169,6 +173,14 @@ public class FreemarkerConfigAwareListener {
         configuration
             .setSharedVariable("categories_url", context + optionService.getCategoriesPrefix());
         configuration.setSharedVariable("tags_url", context + optionService.getTagsPrefix());
+        configuration.setSharedVariable("meilisearch_enable", meiliSearchConfiguration.getEnable());
+        if (meiliSearchConfiguration.getEnable()) {
+            configuration.setSharedVariable("meilisearch_url", meiliSearchConfiguration.getHost());
+            configuration.setSharedVariable("meilisearch_key",
+                meiliSearchConfiguration.getApiKey());
+            configuration.setSharedVariable("meilisearch_index_name",
+                meiliSearchConfiguration.getIndexName());
+        }
 
         log.debug("Loaded options");
     }

@@ -4,6 +4,8 @@ import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.exceptions.MeilisearchException;
+import com.meilisearch.sdk.model.Key;
+import com.meilisearch.sdk.model.Results;
 import com.meilisearch.sdk.model.Settings;
 import lombok.Data;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,10 +32,20 @@ public class MeiliSearchConfiguration {
 
     private Boolean includeIntimate;
 
+    private String apiKey;
+
+
     @Bean
     @ConditionalOnProperty(value = "meilisearch.enable", havingValue = "true")
     public Index getIndex() throws MeilisearchException {
         Client client = new Client(new Config(host, masterKey));
+        Results<Key> keys = client.getKeys();
+        for (Key key : keys.getResults()) {
+            if (key.getName().equals("Default Search API Key")) {
+                apiKey = key.getKey();
+                break;
+            }
+        }
         Index index = client.index(indexName);
         // setting
         Settings settings = new Settings();
