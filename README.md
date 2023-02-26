@@ -46,7 +46,7 @@
      # 是否启用 meilisearch 加强搜索
      enable: true
      # meilisearch 的访问地址，后面会被环境变量覆盖
-     host: http://localhost:7700
+     host: https://hostname
      # meilisearch 索引名字
      index-name: halo
      # 访问 meilisearch 的密钥, 需要大于 16 位
@@ -79,7 +79,7 @@
          - SERVER_PORT=8090
          - HALO_ADMIN_PATH=admin
          - HALO_CACHE=memory
-         - MEILISEARCH_HOST=http://meilisearch:7700
+         - MEILISEARCH_HOST=https://hostname
    
      meilisearch:
          image: getmeili/meilisearch:v1.0
